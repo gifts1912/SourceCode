@@ -1,5 +1,5 @@
 #include<iostream>
-
+#include<algorithm>
 using namespace std;
 
 void OutArray(int *arr, int n) {
@@ -13,17 +13,21 @@ void CountingSort(int *arr, int n) {
 	//all elements in arr are nonnegative integer
 	int max = arr[0];
 	int * preSortArr = new int[n+1];
-	preSortArr[0] = arr[0];
+	//preSortArr[0] = arr[0];
 	for (int i = 1; i < n; i++) {
 		if (max < arr[i]) {
 			max = arr[i];
 		}
-		preSortArr[i] = arr[i];
+		//preSortArr[i] = arr[i];
 	}
+	copy(arr, arr + n, preSortArr);
 	int * auxiliaryArr = new int[max+1];
+	/*
 	for (int i = 0; i < max+1; i++) {
 		auxiliaryArr[i] = 0;
-	}
+	}*/
+	fill(auxiliaryArr, auxiliaryArr + max + 1, 0);
+	
 	for (int i = 0; i < n; i++) {
 		auxiliaryArr[arr[i]] += 1;
 	}
