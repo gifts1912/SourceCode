@@ -45,7 +45,7 @@ void Free_Object(int i) {
 	free_list = i;
 }
 
-void cons(int key, int list) {
+int cons(int key, int list) {
 	int i = Allocate_Object();
 	NEXT(i) = list;
 	PREV(i) = -1;
@@ -67,7 +67,9 @@ void Delete(int l) {
 	Free_Object(l);
 }
 
+/*
 int main() {
 
 	return 0;
 }
+*/
