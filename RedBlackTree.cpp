@@ -58,21 +58,21 @@ public:
 private:
 	void Left_Rotation(struct Node *curNode) {
 		struct Node * rcNode = curNode->right;
+		curNode->right = rcNode->left;
+		if (rcNode->left != nil) {
+			rcNode->left->parent = curNode;
+		}
+
 		rcNode->parent = curNode->parent;
 		if (curNode->parent == nil) {
 			root = rcNode;
 		}
-		if (curNode->parent->left = curNode) {
+		else if (curNode->parent->left = curNode) {
 			curNode->parent->left = rcNode;
 		}
 		else {
 			curNode->parent->right = rcNode;
 		}
-
-		if (rcNode->left != nil) {
-			rcNode->left->parent = curNode;
-		}
-		curNode->right = rcNode;
 
 		rcNode->left = curNode;
 		curNode->parent = rcNode;
@@ -80,19 +80,19 @@ private:
 
 	void Right_Rotation(struct Node* curNode) {
 		struct Node *lcNode = curNode->left;
+		curNode->left = lcNode->right;
+		if (lcNode->right != nil) {
+			lcNode->right->parent = curNode;
+		}
 		lcNode->parent = curNode->parent;
 		if (curNode->parent == nil) {
 			root = lcNode;
 		}
-		if (curNode->parent->left == curNode) {
+		else if (curNode->parent->left == curNode) {
 			curNode->parent->left = lcNode;
 		}
 		else {
 			curNode->parent->right = lcNode;
-		}
-		curNode->left = lcNode->right;
-		if (lcNode->right != nil) {
-			lcNode->right->parent = curNode;
 		}
 		lcNode->right = curNode;
 		curNode->parent = lcNode;
@@ -158,10 +158,10 @@ private:
 			curNode = nodes.front();
 			nodes.pop();
 			cout << curNode->key << ":" << curNode->col << " ";
-			if (curNode->left != NULL) {
+			if (curNode->left != nil) {
 				nodes.push(curNode->left);
 			}
-			if (curNode->right != NULL) {
+			if (curNode->right != nil) {
 				nodes.push(curNode->right);
 			}
 		}
@@ -172,7 +172,7 @@ public:
 		for (int i = 0; i < n; i++) {
 			Tree_Insert(arr[i]);
 		}
-		
+
 		Tree_LayerOut();
 	}
 };
@@ -180,6 +180,7 @@ public:
 int main() {
 	int arr[] = { 11, 2, 14, 1, 7, 15, 5, 8, 4 };
 	Red_Black_Tree rbt;
-	rbt.Init_RBT(arr, sizeof(arr)/sizeof(arr[1]));
+	rbt.Init_RBT(arr, sizeof(arr) / sizeof(arr[1]));
+	getchar();
 	return 0;
 }
