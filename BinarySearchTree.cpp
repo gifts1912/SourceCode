@@ -1,404 +1,321 @@
 #include <iostream>
-#include <cstdlib>
-#include <stack>
+#include <cstdio>
 #include <queue>
-
 
 using namespace std;
 
+
+enum Color {
+	Red,
+	Black
+};
 struct Node {
-	Node(int value) {
-		key = value;
-		parent = NULL;
-		left = NULL;
-		right = NULL;
-	}
 	int key;
-	struct Node *parent;
 	struct Node *left;
 	struct Node *right;
+	struct Node *parent;
+	Color col = Red;
+	struct Node(int _key, Color _col, struct Node* _nil) : key(_key), col(_col), parent(_nil), left(_nil), right(_nil) {
+	}
 };
 
-class RedBlackTree {
+
+class Red_Black_Tree {
 private:
-	struct Node *root;
-	struct Node *nil = new struct Node(-1);
+	struct Node *nil = new struct Node(-1, Black, NULL);
+	struct Node *root = nil;
 
 public:
-	RedBlackTree():root(NULL){}
-
-	void Left_Rotation(struct Node *x) {
-		struct Node *y = x->right;
-		x->right = y->left;
-		y->parent = x->parent;
-		if (x->parent == nil) {
-			root = y;
+	void Tree_Insert(int _key) {
+		struct Node *preNode = nil;
+		struct Node *curNode = root;
+		while (curNode != nil) {
+			preNode = curNode;
+			if (curNode->key < _key) {
+				curNode = curNode->right;
+			}
+			else {
+				curNode = curNode->left;
+			}
 		}
-		else if (x->parent->left == x) {
-			x->parent->left = y;
-		}
-		else {
-			x->parent->right = y;
-		}
-		if (y->left != NULL) {
-			y->left->parent = x;
-		}
-		y->left = x;
-		x->parent = y;
-	}
-
-	void Right_Rotation(struct Node *x) {
-		struct Node *y = x->left;
-		x->left = y->right;
-		y->right->parent = x;
-		y->parent = x->parent;
-		if (x->parent == nil) {
-			root = y;
-		}
-		else if (x->parent->left == x) {
-			x->parent->left = y;
+		struct Node *newNode = new struct Node(_key, Red, nil);
+		if (preNode == nil) {
+			root = newNode;
+			newNode->col = Black;
 		}
 		else {
-			x->parent->right = y;
+			newNode->parent = preNode;
+			if (preNode->key >= _key) {
+				preNode->left = newNode;
+			}
+			else {
+				preNode->right = newNode;
+			}
+			Tree_Fix(newNode);
 		}
-		y->right = x;
-		x->parent = y;
 	}
-	
-};
 
-class BinarySearchTree {
 private:
-	struct Node *root;
-
-public:
-	BinarySearchTree() :root(NULL) {}
-
-	void Add_Node(int value) {
-		struct Node * node = new struct Node(value);
-		if (root == NULL) {
-			root = node;
-			return;
+	void Left_Rotation(struct Node *curNode) {
+		struct Node * rcNode = curNode->right;
+		curNode->right = rcNode->left;
+		if (rcNode->left != nil) {
+			rcNode->left->parent = curNode;
 		}
 
-		struct Node *pNode = root;
-		while (true) {
-			if (pNode->key >= value) {
-				if (pNode->left != NULL) {
-					pNode = pNode->left;
+		rcNode->parent = curNode->parent;
+		if (curNode->parent == nil) {
+			root = rcNode;
+		}
+		else if (curNode->parent->left = curNode) {
+			curNode->parent->left = rcNode;
+		}
+		else {
+			curNode->parent->right = rcNode;
+		}
+
+		rcNode->left = curNode;
+		curNode->parent = rcNode;
+	}
+
+	void Right_Rotation(struct Node* curNode) {
+		struct Node *lcNode = curNode->left;
+		curNode->left = lcNode->right;
+		if (lcNode->right != nil) {
+			lcNode->right->parent = curNode;
+		}
+		lcNode->parent = curNode->parent;
+		if (curNode->parent == nil) {
+			root = lcNode;
+		}
+		else if (curNode->parent->left == curNode) {
+			curNode->parent->left = lcNode;
+		}
+		else {
+			curNode->parent->right = lcNode;
+		}
+		lcNode->right = curNode;
+		curNode->parent = lcNode;
+	}
+
+
+
+	void Tree_Fix(struct Node * curNode) {
+		while (curNode->parent->col == Red) {
+			struct Node * pNode = curNode->parent;
+			struct Node* gpNode = curNode->parent->parent;
+			struct Node *uncleNode;
+			if (gpNode->left == pNode) {
+				uncleNode = gpNode->right;
+				if (uncleNode->col == Red) {
+					//case 1
+					pNode->col = Black;
+					uncleNode->col = Black;
+					gpNode->col = Red;
+					curNode = gpNode;
 				}
 				else {
-					pNode->left = node;
-					node->parent = pNode;
-					return;
+					if (pNode->right == curNode) {
+						Left_Rotation(pNode);
+						curNode = pNode;
+						pNode = curNode->parent;
+					}
+					pNode->col = Black;
+					gpNode->col = Red;
+					Right_Rotation(gpNode);
 				}
 			}
 			else {
-				if (pNode->right != NULL) {
-					pNode = pNode->right;
+				uncleNode = gpNode->left;
+				if (uncleNode->col == Red) {
+					//case1
+					pNode->col = Black;
+					uncleNode->col = Black;
+					gpNode->col = Red;
+					curNode = gpNode;
 				}
 				else {
-					pNode->right = node;
-					node->parent = pNode;
-					return;
+					//case2 & case3
+					if (pNode->left == curNode) {
+						Right_Rotation(pNode);
+						curNode = pNode;
+						pNode = curNode->parent;
+					}
+					pNode->col = Black;
+					gpNode->col = Red;
+					Left_Rotation(gpNode);
 				}
 			}
 		}
+		root->col = Black;
+	}
 
+
+	void Transplate(struct Node *uNode, struct Node *vNode) {
+		if (uNode->parent == nil) {
+			root = vNode;
+		}
+		else if (uNode->parent->left == uNode) {
+			uNode->parent->left = vNode;
+		}
+		else {
+			uNode->parent->right = vNode;
+		}
+		vNode->parent = uNode->parent;
+	}
+
+	struct Node *Tree_Successor(struct Node *subRoot) {
+		struct Node *preNode = nil;
+		struct Node *curNode = subRoot;
+		while (curNode != nil) {
+			preNode = curNode;
+			curNode = curNode->left;
+		}
+		return preNode;
+	}
+
+	void RB_Tree_FixUp(struct Node *curNode) {
+		while (curNode != root && curNode->col == Black) {
+			if (curNode->parent->left == curNode) {
+				struct Node *siblingNode = curNode->parent->right;
+				if (siblingNode->col == Red) {
+					curNode->parent->col = Red;
+					siblingNode->col = Black;
+					Left_Rotation(curNode->parent);
+					siblingNode = curNode->parent->right;
+				}
+				if (siblingNode->left->col == Black && siblingNode->right->col == Black) {
+					curNode = curNode->parent;
+					siblingNode->col = Red;
+				}
+				else {
+					if (siblingNode->right->col == Black) {
+						siblingNode->left->col = Black;
+						siblingNode->col = Red;
+						Right_Rotation(siblingNode);
+						siblingNode = curNode->parent->right;
+					}
+					siblingNode->col = curNode->parent->col;
+					curNode->parent->col = Black;
+					Left_Rotation(curNode->parent);
+					siblingNode->right->col = Black;
+					curNode = root;
+				}
+			}
+			else {
+				struct Node *siblingNode = curNode->parent->left;
+				if (siblingNode->col == Red) {
+					curNode->parent->col = Red;
+					siblingNode->col = Black;
+					Right_Rotation(curNode->parent);
+					siblingNode = curNode->parent->left;
+				}
+				if (siblingNode->left->col == Black && siblingNode->right->col == Black) {
+					siblingNode->col = Red;
+					curNode = curNode->parent;
+				}
+				else {
+					if (siblingNode->left->col == Black) {
+						siblingNode->right->col = Black;
+						siblingNode->col = Red;
+						Left_Rotation(siblingNode);
+						siblingNode = curNode->parent->left;
+					}
+					siblingNode->col = curNode->parent->col;
+					siblingNode->left->col = Black;
+					curNode->parent->col = Black;
+					Right_Rotation(curNode->parent);
+					curNode = root;
+				}
+			}
+		}
+		curNode->col = Black;
+	}
+	struct Node *Tree_Search(int value) {
+		struct Node *curNode = root;
+		while (curNode != nil) {
+			if (curNode->key == value) {
+				break;
+			}
+			else if (curNode->key < value) {
+				curNode = curNode->right;
+			}
+			else {
+				curNode = curNode->left;
+			}
+		}
+		return curNode;
+	}
+
+public:
+	void Tree_LayerOut() {
+		queue<struct Node*> nodes;
+		nodes.push(root);
+		struct Node *curNode;
+		while (!nodes.empty()) {
+			curNode = nodes.front();
+			nodes.pop();
+			cout << curNode->key << ":" << curNode->col << " ";
+			if (curNode->left != nil) {
+				nodes.push(curNode->left);
+			}
+			if (curNode->right != nil) {
+				nodes.push(curNode->right);
+			}
+		}
+		cout << endl;
+	}
+
+	void Init_RBT(int *arr, int n) {
+		for (int i = 0; i < n; i++) {
+			Tree_Insert(arr[i]);
+		}
+
+		Tree_LayerOut();
 	}
 
 	void Tree_Delete(int value) {
-		struct Node * pNode = Search(value);
-		if (pNode == NULL) {
-			return;
+		struct Node *delNode = Tree_Search(value);
+		struct Node *curNode = delNode;
+		enum Color repNodeOriCol = curNode->col;
+		struct Node *replaceNode;
+		if (curNode->left == nil) {
+			replaceNode = curNode->right;
+			Transplate(curNode, replaceNode);
 		}
-		struct Node *preNode = NULL;
-		if (pNode->left == NULL && pNode->right == NULL) {
-			preNode = pNode->parent;
-			if (preNode == NULL) {
-				root = NULL;
-				return;
-			}
-			if (preNode->left == pNode) {
-				preNode->left = NULL;
-			}
-			else {
-				preNode->right = NULL;
-			}
-			return;
-		}
-		else if ((pNode->left != NULL && pNode->right == NULL) || (pNode->right != NULL && pNode->left == NULL)) {
-			preNode = pNode->parent;
-			if (preNode == NULL) {
-
-			}
-			else {
-				if (pNode->left != NULL) {
-					if (preNode->left == pNode) {
-						preNode->left = pNode->left;
-					}
-					else {
-						preNode->right = pNode->left;
-					}
-				}
-				else {
-					if (preNode->left == pNode) {
-						preNode->left = pNode->right;
-					}
-					else
-						preNode->right = pNode->right;
-				}
-			}
+		else if (curNode->right == nil) {
+			replaceNode = curNode->left;
+			Transplate(curNode, replaceNode);
 		}
 		else {
-			struct Node *succ_node = Successor(value);
-			pNode->key = succ_node->key;
-			if (succ_node->parent->left == succ_node) {
-				succ_node->parent->left = succ_node->right;
+			replaceNode = Tree_Successor(curNode->right);
+			struct Node *repChildNode = replaceNode->right;
+			if (replaceNode->parent == curNode) {
+				repChildNode->parent = replaceNode;
 			}
 			else {
-				succ_node->parent->right = succ_node->right;
+				Transplate(replaceNode, repChildNode);
+				replaceNode->right = curNode->right;
+				replaceNode->right->parent = replaceNode;
 			}
+			Transplate(curNode, replaceNode);
+			replaceNode->left = curNode->left;
+			replaceNode->left->parent = replaceNode;
+			repNodeOriCol = replaceNode->col;
+		}
+		if (repNodeOriCol == Black) {
+			RB_Tree_FixUp(replaceNode);
 		}
 	}
-
-	void Tree_LayerOut() {
-		queue<struct Node *> queues;
-		queues.push(root);
-		while (!queues.empty()) {
-			struct Node *curNode = queues.front();
-			cout << curNode->key << " ";
-			if (curNode->left != NULL) {
-				queues.push(curNode->left);
-			}
-			if (curNode->right != NULL) {
-				queues.push(curNode->right);
-			}
-		}
-	}
-
-	struct Node * Search(int value) {
-		struct Node *pNode = root;
-		while (pNode != NULL) {
-			if (pNode->key == value) {
-				break;
-			}
-			else if (pNode->key < value) {
-				pNode = pNode->right;
-			}
-			else {
-				pNode = pNode->left;
-			}
-		}
-		return pNode;
-	}
-
-	void In_Order_Recursive(struct Node *root) {
-		if (root == NULL) {
-			return;
-		}
-		In_Order_Recursive(root->left);
-		cout << root->key << " ";
-		In_Order_Recursive(root->right);
-	}
-
-	void In_Order_Iterative() {
-		struct Node *pos = root;
-		struct Node *pre = NULL;
-		if (pos == NULL)
-			return;
-		while (true) {
-			if (pre == NULL) {
-				if (pos->left != NULL) {
-					pos = pos->left;
-					continue;
-				}
-				cout << pos->key << " ";
-				if (pos->right != NULL) {
-					pre = NULL;
-					pos = pos->right;
-					continue;
-				}
-			}
-			else {
-				if (pre == pos->left) {
-					cout << pos->key << " ";
-					if (pos->right != NULL) {
-						pre = NULL;
-						pos = pos->right;
-						continue;
-					}
-				}
-			}
-
-			if (pos->parent != NULL) {
-				pre = pos;
-				pos = pos->parent;
-			}
-			else {
-				return;
-			}
-		}
-	}
-	void In_Order_Stack() {
-		struct Node * pNode = root;
-		if (pNode == NULL) {
-			return;
-		}
-		stack<struct Node*> nodes;
-		while (true) {
-			while (pNode != NULL) {
-				nodes.push(pNode);
-				pNode = pNode->left;
-			}
-			while (!nodes.empty()) {
-				struct Node *curNode = nodes.top();
-				cout << curNode->key << " ";
-				nodes.pop();
-				if (curNode->right != NULL) {
-					pNode = curNode->right;
-					break;
-				}
-				else {
-					continue;
-				}
-			}
-			if (nodes.empty() && pNode == NULL) {
-				break;
-			}
-		}
-	}
-	struct Node *Precessor(int value) {
-		struct Node *pNode = Search(value);
-		if (pNode == NULL) {
-			return NULL;
-		}
-		if (pNode->left != NULL) {
-			return Tree_Maximum(pNode->left);
-		}
-		struct Node *preNode = pNode->parent;
-		while (preNode != NULL && preNode->left == pNode) {
-			pNode = preNode;
-			preNode = pNode->parent;
-		}
-		return preNode;
-	}
-
-	struct Node * Successor(int value) {
-		struct Node *pNode = Search(value);
-		if (pNode == NULL) {
-			return NULL;
-		}
-		if (pNode->right != NULL) {
-			return Tree_Minimum(pNode->right);
-		}
-		struct Node *preNode = pNode->parent;
-		while (preNode != NULL && preNode->right == pNode) {
-			pNode = preNode;
-			preNode = pNode->parent;
-		}
-		return preNode;
-	}
-
-	struct Node* Tree_Minimum(struct Node *root) {
-		struct Node *pNode = root;
-		while (pNode->left != NULL) {
-			pNode = pNode->left;
-		}
-		cout << "Minimum value: " << pNode->key << endl;
-		return pNode;
-	}
-
-	struct Node * Tree_Maximum(struct Node *root) {
-		struct Node *pNode = root;
-		while (pNode->right != NULL) {
-			pNode = pNode->right;
-		}
-		cout << "Maximum value: " << pNode->key << endl;
-		return pNode;
-	}
-
-	void In_Order_Stack_v2() {
-		struct Node * pNode = root;
-		stack<struct Node *> nodes;
-		while (true) {
-			while (pNode != NULL) {
-				nodes.push(pNode);
-				if (pNode->left != NULL) {
-					pNode = pNode->left;
-				}
-				else {
-					break;
-				}
-			}
-			while (!nodes.empty() && nodes.top()->right == NULL) {
-				pNode = nodes.top();
-				cout << pNode->key << " ";
-				nodes.pop();
-			}
-			if (nodes.empty()) {
-				break;
-			}
-			else {
-				pNode = nodes.top();
-				cout << pNode->key << " ";
-				nodes.pop();
-				pNode = pNode->right;
-			}
-		}
-	}
-
-	void In_Order() {
-		//In_Order_Iterative();
-		In_Order_Stack();
-		//In_Order_Stack_v2();
-		//In_Order_Iterative_v2();
-	}
-
 };
 
-
 int main() {
-	BinarySearchTree bst;
-	int values[] = { 3, 4, 5, 1, 2, 10, 6, 9, 8, 12, 7, 11 };
-	for (int i = 0; i < sizeof(values) / sizeof(values[0]); i++) {
-		bst.Add_Node(values[i]);
-	}
-
-	bst.In_Order();
-	cout << endl;
-
-	cout << "Tree delete 2" << endl;
-	bst.Tree_Delete(2);
-	bst.In_Order();
-	cout << endl;
-	/*
-	struct Node * pNode = bst.Search(18);
-	if (pNode == NULL) {
-		cout << "Null" << endl;
-	}
-	else {
-		cout << pNode->key << endl;
-	}
-
-	//bst.Tree_Minimum();
-	//bst.Tree_Maximum();
-	cout << endl << "Successor" << endl;
-	pNode = bst.Successor(7);
-	if (pNode == NULL) {
-		cout << "Null" << endl;
-	}
-	else
-		cout << pNode->key << endl;
-
-	cout << endl << "Precessor" << endl;
-	pNode = bst.Precessor(1);
-	if (pNode == NULL) {
-		cout << "Null" << endl;
-	}
-	else
-		cout << pNode->key << endl;
-	*/
+	int arr[] = { 11, 2, 14, 1, 7, 15, 5, 8, 4 };
+	Red_Black_Tree rbt;
+	rbt.Init_RBT(arr, sizeof(arr) / sizeof(arr[1]));
+	rbt.Tree_Delete(11);
+	rbt.Tree_LayerOut();
 	getchar();
+	
 	return 0;
 }
