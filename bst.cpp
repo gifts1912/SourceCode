@@ -163,6 +163,21 @@ class BST{
 			return node;
 		}
 
+		struct Node *Predecessor_v2(struct Node *node){
+			if (node == NULL){
+				return node;
+			}
+			if(node -> lchild != NULL){
+				return Maximum_Node(node -> lchild);
+			}
+			struct Node *par_node = node -> p;
+			while(par_node != NULL && par_node -> lchild == node){
+				node = par_node;
+				par_node = par_node -> p;
+			}
+			return par_node;
+		}
+
 		struct Node * Predecessor(struct Node *node){
 			struct Node *cur_node = node;
 			struct Node *pre_node = NULL;
@@ -187,13 +202,177 @@ class BST{
 				}
 			}
 		}
+		int Delete_Node(struct Node *node) {
+			if (node == NULL) {
+				return -1;
+			}
+			if (node->lchild == NULL && node->rchild == NULL) {
+				if (node->p != NULL) {
+					if (node->p->lchild == node) {
+						node->p->lchild = NULL;
+					}
+					else {
+						node->p->rchild = NULL;
+					}
+					return 0;
+				}
+				else {
+					root = NULL;
+					return -1;
+				}
+			}
+			else if (node->lchild == NULL || node->rchild == NULL) {
+				struct Node *parent_node = node->p;
+				if (parent_node == NULL) {
+					root = node->lchild == NULL ? node->rchild : node->lchild;
+					delete node;
+					return 0;
+				}
+				else {
+					struct Node *no_null_node = node->lchild == NULL ? node->rchild : node->lchild;
+					if (parent_node->lchild == node) {
+						parent_node->lchild = no_null_node;
+					}
+					else {
+						parent_node->rchild = no_null_node;
+					}
+					no_null_node->p = parent_node;
+				}
+				delete node;
+				return 0;
+			}
+			else {
+				struct Node *successor_node = Successor(node);
+				node->key = successor_node->key;
+				while (successor_node->lchild != NULL && successor_node->rchild != NULL) {
+					successor_node = Successor(successor_node);
+				}
+				struct Node *no_null_node = successor_node->lchild != NULL ? successor_node->lchild : successor_node->rchild;
+				struct Node *parent_node = successor_node->p;
+				if (parent_node == NULL) {
+					root = no_null_node;
+				}
+				else {
+					if (parent_node->lchild == successor_node) {
+						parent_node->lchild = no_null_node;
+					}
+					else {
+						parent_node->rchild = no_null_node;
+					}
+					no_null_node->p = parent_node;
+				}
+				delete successor_node;
+				return 0;
+			}
+		}
 
+		struct Node *Successor(struct Node *node){
+			if(node == NULL){
+				return node;
+			}
+			if (node->rchild != NULL){
+				return Minmum_Node(node->rchild);
+			}
+			struct Node * p_node = node -> p;
+			while(p_node != NULL && p_node -> lchild != node){
+				node = p_node;
+				p_node = p_node -> p;
+			}
+			return p_node;
+		}
+
+		int Delete_Node_V2(struct Node *node){
+			struct Node *parent_node;
+			if (node == NULL){
+				return -1;
+			}
+			if(node->lchild == NULL){
+				parent_node = node->p;
+				if(parent_node == NULL){
+					root = node -> rchild;
+					delete node;
+					return 0;
+				}
+				if(parent_node->lchild == node){
+					parent_node -> lchild = node -> rchild;
+				}
+				else{
+					parent_node -> rchild = node -> rchild;
+				}
+				if(node->rchild != NULL){
+					node->rchild->p = parent_node;
+				}
+				delete node;
+				return 0;
+			}
+			else if (node -> lchild != NULL & node ->rchild == NULL){
+				parent_node = node->p;
+				if(parent_node == NULL){
+					root = node->lchild;	
+					delete node;
+					return 0;
+				}
+				if(parent_node -> lchild == node){
+					parent_node -> lchild = node->lchild;
+				}
+				else {
+					parent_node -> rchild = node -> lchild;
+				}
+				if(node -> lchild != NULL){
+					node -> lchild -> p = parent_node;
+				}
+				delete node;
+				return 0;
+			}
+			else {
+				struct Node *successor_node = Successor(node);
+				if(successor_node == node->rchild) {
+					parent_node = node->p;
+					if(parent_node == NULL){
+						root = node->rchild;
+						delete node;
+						return 0;
+					}
+					if(parent_node -> lchild == node){
+						parent_node -> lchild = node -> rchild;
+					}
+					else {
+						parent_node -> rchild = node -> rchild;
+					}
+					if (node->rchild != NULL){
+						node->rchild -> p = parent_node;
+					}
+					delete node;
+					return 0;
+				}
+				else{
+					struct Node *successor_right = successor_node -> rchild;
+					parent_node = successor_node-> p;
+					if (parent_node == NULL){
+						root = successor_right;
+					}
+					if(parent_node->lchild == successor_node){
+						parent_node->lchild = successor_right;
+					}
+					else {
+						parent_node->rchild = successor_right;
+					}
+					if(successor_right != NULL){
+						successor_right -> p = parent_node;
+					}
+					node -> key = successor_node -> key;
+					delete node;
+					return 0;
+				}
+			}
+		}
 	public:
 		struct Node *root = NULL;
 	private:
 		int *arr;
 		int num;
 };
+
 
 int main(){
 	int arr[] = { 6, 5, 7, 2, 5, 12, 9, 8 };
@@ -257,14 +436,24 @@ int main(){
 			continue;
 		}
 
-		struct Node *predecessor_node = bst.Predecessor(search_node);
+		//struct Node *predecessor_node = bst.Predecessor(search_node);
+		struct Node *predecessor_node = bst.Predecessor_v2(search_node);
 		if(predecessor_node != NULL){
 			cout << "Predecessor value is: " << predecessor_node->key << endl;
 		}
 		else {
 			cout << "Predecessor not exists!" << endl;
 		}
+
+		/*
+		   struct Node *successor_node = bst.Successor(search_node);
+		   if(successor_node != NULL){
+		   cout << "successor value is: " << successor_node->key << endl;
+		   }
+		   else {
+		   cout << "successor not exists!" << endl;
+		   }
+		   */
 	}
 	return 0;
 }
-
