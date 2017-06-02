@@ -1,6 +1,7 @@
 #include<iostream>
 #include <string>
 #include <sstream>
+#include <queue>
 
 using namespace std;
 
@@ -287,62 +288,59 @@ class BST{
 				return -1;
 			}
 			if(node->lchild == NULL){
-				parent_node = node->p;
-				if(parent_node == NULL){
-					root = node -> rchild;
+				struct Node *rc = node -> rchild;
+				if(rc == NULL){
+					if(node->p != NULL){
+						if(node ->p -> lchild == node){
+							node ->p -> lchild = NULL;
+						}
+						else {
+							node -> p -> rchild = NULL;
+						}
+					}
+					else {
+						root = NULL;
+					}
 					delete node;
 					return 0;
-				}
-				if(parent_node->lchild == node){
-					parent_node -> lchild = node -> rchild;
 				}
 				else{
-					parent_node -> rchild = node -> rchild;
-				}
-				if(node->rchild != NULL){
-					node->rchild->p = parent_node;
-				}
-				delete node;
-				return 0;
-			}
-			else if (node -> lchild != NULL & node ->rchild == NULL){
-				parent_node = node->p;
-				if(parent_node == NULL){
-					root = node->lchild;	
-					delete node;
+					node -> key = rc -> key;
+					node -> lchild = rc -> lchild;
+					node -> rchild = rc -> rchild;
+					if(rc -> lchild != NULL){
+						rc -> lchild -> p = node;
+					}
+					if(rc -> rchild != NULL){
+						rc -> rchild -> p = node;
+					}
+					delete rc;
 					return 0;
 				}
-				if(parent_node -> lchild == node){
-					parent_node -> lchild = node->lchild;
+			}
+			else if (node -> lchild != NULL & node ->rchild == NULL){
+				struct Node *lc = node -> lchild;
+				node -> key = lc -> key;
+				node -> lchild = lc -> lchild;
+				node -> rchild = lc -> rchild;
+				if(lc -> rchild != NULL){
+					lc->rchild -> p = node;
 				}
-				else {
-					parent_node -> rchild = node -> lchild;
+				if(lc -> lchild != NULL){
+					lc -> lchild -> p = node;
 				}
-				if(node -> lchild != NULL){
-					node -> lchild -> p = parent_node;
-				}
-				delete node;
+				delete lc;
 				return 0;
 			}
 			else {
 				struct Node *successor_node = Successor(node);
 				if(successor_node == node->rchild) {
-					parent_node = node->p;
-					if(parent_node == NULL){
-						root = node->rchild;
-						delete node;
-						return 0;
+					node -> key = successor_node -> key;
+					node->rchild = successor_node -> rchild;
+					if(successor_node -> rchild != NULL){
+						successor_node -> p = node;
 					}
-					if(parent_node -> lchild == node){
-						parent_node -> lchild = node -> rchild;
-					}
-					else {
-						parent_node -> rchild = node -> rchild;
-					}
-					if (node->rchild != NULL){
-						node->rchild -> p = parent_node;
-					}
-					delete node;
+					delete successor_node;
 					return 0;
 				}
 				else{
@@ -366,6 +364,65 @@ class BST{
 				}
 			}
 		}
+
+		void Transplant(struct Node *U, struct Node *V){
+			if(U->p == NULL){
+				root = V;
+			}
+			else if(U->p -> rchild == U){
+				U -> p -> rchild = V;
+			}
+			else {
+				U -> p -> lchild = V;
+			}
+			if(V != NULL) {
+				V -> p = U->p;
+			}
+		}
+		
+		int Delete_Node_V3(struct Node *node){
+			if(node == NULL){
+				return -1;
+			}
+			if(node -> lchild == NULL) {
+				Transplant(node, node -> rchild);	
+				delete node;
+				return 0;
+			}
+			else if(node -> rchild == NULL){
+				Transplant(node, node -> lchild);
+				delete node;
+				return 0;
+			}
+			else {
+				struct Node *successor_node = Successor(node);
+				Transplant(successor_node, successor_node->rchild);
+				node -> key = successor_node -> key;							
+				delete successor_node;
+				return 0;
+			}
+		}
+
+		void Layer_Out(){
+			queue<struct Node *> queue_nodes;
+			if(root != NULL){
+				queue_nodes.push(root);
+			}
+			struct Node *cur_node = NULL;
+			while(!queue_nodes.empty()){
+				cur_node = queue_nodes.front();
+				queue_nodes.pop();
+				cout << cur_node -> key << '\t';
+				if(cur_node -> lchild != NULL){
+					queue_nodes.push(cur_node->lchild);
+				}
+				if(cur_node -> rchild != NULL){
+					queue_nodes.push(cur_node->rchild);
+				}
+			}
+			cout << endl;
+		}
+
 	public:
 		struct Node *root = NULL;
 	private:
@@ -375,7 +432,7 @@ class BST{
 
 
 int main(){
-	int arr[] = { 6, 5, 7, 2, 5, 12, 9, 8 };
+	int arr[] = { 6, 5, 8, 2, 5, 7, 12, 11, 9, 10 };
 	BST bst(arr, sizeof(arr)/sizeof(arr[0]));
 	cout << "create bst!" <<endl;
 	bst.CreateBST();
@@ -421,6 +478,9 @@ int main(){
 	if(!b){
 		cout << "Maxium_value is: " << maximum << endl;
 	}
+	
+	cout << "Layer out is : " << endl;
+	bst.Layer_Out();
 
 	int value;
 	string line;
@@ -436,6 +496,7 @@ int main(){
 			continue;
 		}
 
+		/*
 		//struct Node *predecessor_node = bst.Predecessor(search_node);
 		struct Node *predecessor_node = bst.Predecessor_v2(search_node);
 		if(predecessor_node != NULL){
@@ -444,6 +505,13 @@ int main(){
 		else {
 			cout << "Predecessor not exists!" << endl;
 		}
+		*/
+		//bool del_res = bst.Delete_Node_V2(search_node);
+		bool del_res = bst.Delete_Node_V3(search_node);
+		string del_flag = del_res == 0 ? "Del Success" : "Del failed!";
+		cout << del_flag << endl;
+		cout << "new layer output: " << endl;
+		bst.Layer_Out();
 
 		/*
 		   struct Node *successor_node = bst.Successor(search_node);
