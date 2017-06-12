@@ -1,186 +1,183 @@
 #include <iostream>
-#include <cstdio>
+#include <string>
 #include <queue>
 
 using namespace std;
 
+enum Color{Red, Black};
 
-enum Color {
-	Red,
-	Black
-};
-struct Node {
-	int key;
-	struct Node *left;
-	struct Node *right;
-	struct Node *parent;
-	Color col = Red;
-	struct Node(int _key, Color _col, struct Node* _nil) : key(_key), col(_col), parent(_nil), left(_nil), right(_nil) {
-	}
+struct Node{
+    int key;
+    struct Node *p;
+    struct Node *lchild;
+    struct Node *rchild;
+    Color color;
+    Node(int _key, struct Node *_p, struct Node *_lchild, struct Node *_rchild, Color _color):key(_key), p(_p), lchild(_lchild), rchild(_rchild), color(_color){}
+
 };
 
+class RBT{
+    public:
+        struct Node *root;
+        struct Node *nill;
 
-class Red_Black_Tree {
-private:
-	struct Node *nil = new struct Node(-1, Black, NULL);
-	struct Node *root = nil;
+    public:
+        RBT(){
+            nill = new struct Node(-1, NULL, NULL, NULL, Black);
+            root = nill;
+            nill -> lchild = root;
+            nill -> rchild = root;
+        }
 
-public:
-	void Tree_Insert(int _key) {
-		struct Node *preNode = nil;
-		struct Node *curNode = root;
-		while (curNode != nil) {
-			preNode = curNode;
-			if (curNode->key < _key) {
-				curNode = curNode->right;
-			}
-			else {
-				curNode = curNode->left;
-			}
-		}
-		struct Node *newNode = new struct Node(_key, Red, nil);
-		if (preNode == nil) {
-			root = newNode;
-			newNode->col = Black;
-		}
-		else {
-			newNode->parent = preNode;
-			if (preNode->key >= _key) {
-				preNode->left = newNode;
-			}
-			else {
-				preNode->right = newNode;
-			}
-			Tree_Fix(newNode);
-		}
-	}
+        int Left_Rotate(struct Node * x_node){
+            struct Node *y_node = x_node -> rchild;
+            y_node -> p = x_node -> p;
+            if(x_node -> p == nill){
+                root = y_node;
+            }
+            else if (x_node == x_node->p->lchild){
+                x_node->p->lchild = y_node;
+            }
+            else{
+                x_node->p->rchild = y_node;
+            }
 
-private:
-	void Left_Rotation(struct Node *curNode) {
-		struct Node * rcNode = curNode->right;
-		curNode->right = rcNode->left;
-		if (rcNode->left != nil) {
-			rcNode->left->parent = curNode;
-		}
+            x_node -> lchild = y_node -> rchild;
+            if(y_node -> rchild != nill){
+                y_node -> rchild -> p = x_node;
+            }
 
-		rcNode->parent = curNode->parent;
-		if (curNode->parent == nil) {
-			root = rcNode;
-		}
-		else if (curNode->parent->left = curNode) {
-			curNode->parent->left = rcNode;
-		}
-		else {
-			curNode->parent->right = rcNode;
-		}
+            y_node -> rchild = x_node;
+            x_node -> p = y_node;
 
-		rcNode->left = curNode;
-		curNode->parent = rcNode;
-	}
+            return 0;
+        }
 
-	void Right_Rotation(struct Node* curNode) {
-		struct Node *lcNode = curNode->left;
-		curNode->left = lcNode->right;
-		if (lcNode->right != nil) {
-			lcNode->right->parent = curNode;
-		}
-		lcNode->parent = curNode->parent;
-		if (curNode->parent == nil) {
-			root = lcNode;
-		}
-		else if (curNode->parent->left == curNode) {
-			curNode->parent->left = lcNode;
-		}
-		else {
-			curNode->parent->right = lcNode;
-		}
-		lcNode->right = curNode;
-		curNode->parent = lcNode;
-	}
+        int Right_Rotate(struct Node * x_node){
+            struct Node *y_node = x_node -> rchild;
+            y_node -> p = x_node -> p;
+            if(x_node -> p == nill){
+                root = y_node;
+            }
+            else if(x_node == x_node -> p -> lchild){
+                x_node -> p -> lchild = y_node;
+            }
+            else {
+                x_node -> p -> rchild = y_node;
+            }
 
+            x_node -> rchild = y_node -> lchild;
+            if(y_node->lchild != nill){
+                y_node -> lchild -> p = x_node;
+            }
 
+            y_node -> lchild = x_node;
+            x_node -> p = y_node;
 
-	void Tree_Fix(struct Node * curNode) {
-		while (curNode->parent->col == Red) {
-			struct Node * pNode = curNode->parent;
-			struct Node* gpNode = curNode->parent->parent;
-			struct Node *uncleNode;
-			if (gpNode->left == pNode) {
-				uncleNode = gpNode->right;
-				if (uncleNode->col == Red) {
-					//case 1
-					pNode->col = Black;
-					uncleNode->col = Black;
-					gpNode->col = Red;
-					curNode = gpNode;
-				}
-				else {
-					if (pNode->right == curNode) {
-						Left_Rotation(pNode);
-						curNode = pNode;
-						pNode = curNode->parent;
-					}
-					pNode->col = Black;
-					gpNode->col = Red;
-					Right_Rotation(gpNode);
-				}
-			}
-			else {
-				uncleNode = gpNode->left;
-				if (uncleNode->col == Red) {
-					//case1
-					pNode->col = Black;
-					uncleNode->col = Black;
-					gpNode->col = Red;
-					curNode = gpNode;
-				}
-				else {
-					//case2 & case3
-					if (pNode->left == curNode) {
-						Right_Rotation(pNode);
-						curNode = pNode;
-						pNode = curNode->parent;
-					}
-					pNode->col = Black;
-					gpNode->col = Red;
-					Left_Rotation(gpNode);
-				}
-			}
-		}
-		root->col = Black;
-	}
+            return 0;
+        }
 
-	void Tree_LayerOut() {
-		queue<struct Node*> nodes;
-		nodes.push(root);
-		struct Node *curNode;
-		while (!nodes.empty()) {
-			curNode = nodes.front();
-			nodes.pop();
-			cout << curNode->key << ":" << curNode->col << " ";
-			if (curNode->left != nil) {
-				nodes.push(curNode->left);
-			}
-			if (curNode->right != nil) {
-				nodes.push(curNode->right);
-			}
-		}
-		cout << endl;
-	}
-public:
-	void Init_RBT(int *arr, int n) {
-		for (int i = 0; i < n; i++) {
-			Tree_Insert(arr[i]);
-		}
+        void Fix_Up( struct Node * node){
+            while(node -> p -> color == Red){
+                struct Node *uncle_node;
+                if(node -> p ->p -> lchild == node->p){
+                    uncle_node = node->p->p -> rchild;
+                    if(uncle_node -> color == Red){
+                        node->p ->color = Black;
+                        node->p -> p -> color = Red;
+                        node = node->p->p;
+                    }
+                    else if(uncle_node -> color == Black){
+                        if(node -> p -> rchild == node){
+                            node = node->p;
+                            Left_Rotate(node);
+                        }
+                        node -> p -> color = Black;
+                        node -> p -> p -> color = Red;
+                        Right_Rotate(node->p->p);
+                    }
+                }
+                else{
+                    uncle_node = node -> p -> p -> lchild;
+                    if (uncle_node -> color == Red) {
+                        node -> p -> color = Black;
+                        uncle_node -> color = Black;
+                        node->p -> p -> color = Red;
+                        node = node -> p -> p;
+                    }
+                    else {
+                        if (node == node -> p -> lchild){
+                            Right_Rotate(node);
+                            node = node -> rchild;
+                        }
 
-		Tree_LayerOut();
-	}
+                        node -> p -> color = Black;
+                        node -> p -> p -> color = Red;
+                        Left_Rotate(node -> p);
+                    }
+
+                }
+            }
+            root->color = Black;
+        }
+
+        void Insert_Value( int value){
+            struct Node * new_node = new struct Node(value, NULL, nill, nill, Red);
+            struct Node *cmp_node = root, *pre_node = nill;
+            while(cmp_node != nill){
+                pre_node = cmp_node;
+                if (cmp_node -> key >= value){
+                    cmp_node = cmp_node -> lchild;
+                }
+                else {
+                    cmp_node = cmp_node -> rchild;
+                }
+            }
+            if(pre_node == nill){
+                root = new_node;
+                root -> p = nill;
+            }
+            else if(pre_node -> key >= value){
+                pre_node -> lchild = new_node;
+            }
+            else {
+                pre_node -> rchild = new_node;
+            }
+            new_node -> p = pre_node;
+
+            Fix_Up(new_node);
+        }
+
+        void Layer_Out(){
+            if (root == nill) {
+                return;
+            }
+            queue<struct Node *> nodes;
+            nodes.push(root);
+            struct Node *cur_node;
+            if (!nodes.empty()){
+                cur_node = nodes.front();
+                cout << cur_node -> key << '\t';
+                if(cur_node -> lchild != nill) {
+                    nodes.push(cur_node -> lchild);
+                }
+                else {
+                    nodes.push(cur_node -> rchild);
+                }
+                nodes.pop();
+            }
+        }
+
 };
 
-int main() {
-	int arr[] = { 11, 2, 14, 1, 7, 15, 5, 8, 4 };
-	Red_Black_Tree rbt;
-	rbt.Init_RBT(arr, sizeof(arr) / sizeof(arr[1]));
-	getchar();
-	return 0;
+
+int main(){
+    RBT rbt;
+    int arr[] = {7, 4, 11, 3, 6, 9, 18, 2, 14, 19, 12, 17, 22, 20};
+    for(int i = 0; i < sizeof(arr)/sizeof(arr[0]); i++){
+        rbt.Insert_Value(arr[i]);
+        cout << arr[i] << " tree: ";
+        rbt.Layer_Out();
+    }
+    return 0;
 }
