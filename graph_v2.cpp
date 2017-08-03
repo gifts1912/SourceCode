@@ -10,11 +10,13 @@
 #include <queue>
 #include <fstream>
 #include <utility>
+#include <set>
+#include <string>
+#include <cstdlib>
 #include  "/usr/include/boost/algorithm/string.hpp"
 
 using namespace std;
 
-const Length = 1000;
 
 enum Color {
 	White,
@@ -27,41 +29,39 @@ struct Vertex{
 	Color color;
 	Vertex *parent;
 	int discovery;
-	Vertex(int _key): key(_key){
-	}
+    int d;
+    int f;
+    Vertex(int _key = -1):key(_key){}
 };
 
 struct Graph{
 	vector<Vertex> vertexes;
 	vector< vector<Vertex *> > edges;
+    int time;
 };
 
 
 
 void breadth_first_search(Graph & graph, Vertex * start){
-	for(int i = 0; i < graph.Vertexes.size(); i++){
-		if (graph.Vertexes[i].key == start -> key){
-			graph.Vertexes[i].color = Black;
-		}
-		else
-			graph.Vertexes[i].color = White;
+	for(int i = 0; i < graph.vertexes.size(); i++){
+		graph.vertexes[i].color = White;
 	}
-	start.color = Grey;
-	start.parent = NULL;
-	start.discovery = 0;
+	start -> color = Grey;
+	start -> parent = NULL;
+	start -> discovery = 0;
 
 	queue<Vertex *> qu;
-	qu.push_back(start);
+	qu.push(start);
 	while(!qu.empty()){
 		Vertex * v = qu.front();
-		qu.pop_front();
+		qu.pop();
 		int id = v->key;
-		for(Vertex * v_ele: edges[id]){
+		for(Vertex * v_ele: graph.edges[id]){
 			if (v_ele -> color == White){
 				v_ele -> color = Grey;
 				v_ele -> parent = v;
 				v_ele -> discovery = v->discovery + 1;
-				qu.push_back(v_ele);
+				qu.push(v_ele);
 			}
 		}
 		v -> color = Black;
@@ -81,35 +81,54 @@ vector<string> split(const string &text, char sep){
 	return terms;
 }
 
-void graph_add_edges(Graph *graph, vector<string> edges){
-	set<int> vertex_stored;
+void graph_add_edges(Graph *graph, vector<string>& edges){
+	int max_idx = -1;
 	vector< pair<int, int> > edge_points;
 	for (string edge: edges){
 		vector<string> tokens;
-		boost::split(tokens, line, boost::is_any_of("\t"));
-		int begin_vertex_idx = int(tokens[0]);
-		int end_vertex_idx = int(tokens[1]);
-		tokens_set.insert(begin_vertex);
-		tokens_set.insert(end_vertex);
-		vector<Vertex> begin_vertex_iter = vertex_stored.find(begin_vertex_idx);
-		if(begin_vertex_iter == vertex_stored.end()){
-			Vertex vertex_b(begin_vertex);
-			graph->vertexes.push_back(vertex_b);
+		boost::split(tokens, edge, boost::is_any_of("\t"));
+		int begin_vertex_idx = atoi(tokens[0].c_str());
+		if(max_idx < begin_vertex_idx){
+			max_idx = begin_vertex_idx;
 		}
-		
-		vector<Vertex> end_vertex_iter = vertex_stored.find(end_vertex_idx);
-		if(end_vertex_iter == vertex_stored.end()) {
-			Vertex vertex_e(end_vertex);
-			graph->vertexes.push_back(vertex_e);
+		int end_vertex_idx = atoi(tokens[1].c_str());
+		if(max_idx < end_vertex_idx){
+			max_idx = end_vertex_idx;
 		}
-		
-		edge_points.push_back(make_pair(begin_vertex, end_vertex));
+		edge_points.push_back(make_pair(begin_vertex_idx, end_vertex_idx));
 	}
-	
+	set<int> created_id;
+    for (int i = 0; i < max_idx + 2; i++){
+        Vertex vt_cur(-1);
+        vector<Vertex*> vec;
+        (graph -> vertexes).push_back(vt_cur);
+        (graph -> edges).push_back(vec);
+    }
+	//graph -> edges = vector< vector<Vertex *> > (max_idx+1, NULL);
+	for(pair<int, int> edge_pair: edge_points){
+		if(created_id.find(edge_pair.first) == created_id.end()){
+			graph -> vertexes[edge_pair.first].key = edge_pair.first;
+		}
+		if(created_id.find(edge_pair.second) == created_id.end()){
+			graph -> vertexes[edge_pair.second].key = edge_pair.second;
+		}
+		(graph -> edges)[edge_pair.first].push_back(&(graph->vertexes[edge_pair.second]));
+	}
+
+	cout << "Graph output begin" << endl;
+    int i = 0;
+    for(Vertex vt : (graph->vertexes)){
+        cout << vt.key << ":" << vt.color << '\t';
+        for(Vertex *vt_p : (graph->edges)[vt.key]){
+            cout << vt_p -> key << ",";
+        }
+        cout << endl;
+    }
+    cout << "Graph output end!" <<endl;
 }
 
 void init_graph(Graph *graph, string fn){	
-	ifstream fr = ifstream(fn);
+	ifstream fr(fn, ifstream::in);
 	string line;
 	vector<string> edges;
 	while(!fr.eof()){
@@ -121,10 +140,94 @@ void init_graph(Graph *graph, string fn){
 
 	graph_add_edges(graph, edges);
 }
+void shortest_path(Graph &graph,  Vertex *b, Vertex *e){
+    if (e == NULL){
+        cout << "Not exists path!" << endl;
+        return;
+    }
+    if(e == b){
+        cout << b -> key << endl;
+        return;
+    }
+    else {
+        cout << e->key << '\t';
+        shortest_path(graph, b, e->parent);
+    }
+
+}
+
+
+void DFS(Graph &graph, Vertex *vt){
+    vt -> color = Grey;
+    graph.time++;
+    vt -> d = graph.time;
+    cout << vt -> key << '\t';
+    for(Vertex * vt_ele : graph.edges[vt -> key]){
+        if(vt_ele -> color == White){
+            vt_ele -> parent = vt;
+            DFS(graph, vt_ele);
+        }
+    }
+    vt -> color = Black;
+    graph.time = graph.time + 1;
+    vt -> f = graph.time;
+}
+
+
+void depth_first_search(Graph &graph){
+    for (Vertex & vt : graph.vertexes){
+        vt.color = White;
+        vt.parent = NULL;
+    }
+    graph.time = 0;
+    cout << "Depth seach sequence : ";
+    for (Vertex &vt: graph.vertexes){
+        if (vt.color == White){
+            DFS(graph, &vt);
+        }
+    }
+    cout << endl;
+}
+
+void depth_path(Graph &graph, Vertex *begin, Vertex *end){
+    if(end == NULL){
+        cout << "no path exist!" << endl;
+        return;
+    }
+    if(end  == begin) {
+        cout << end -> key << endl;
+        return;
+    }
+    else {
+        cout << end -> key << '\t';
+        depth_path(graph, begin, end -> parent);
+    }
+
+}
 
 int main(){
-	Graph *graph;
+	Graph *graph = new Graph();
 	string fn = "./edges_pairs.tsv";
+	cout << "init_graph started!" << endl;
 	init_graph(graph, fn);
+	cout << "init_graph finished!" << endl;
+    int start_idx, end_idx;
+
+    /*
+	cout << "bfs started!" << endl;
+	breadth_first_search(*graph, &(graph->vertexes[1]));
+	cout << "bread_first_secarh run finished!" << endl;
+    cin >> start_idx >> end_idx;
+    cout << "from: " << start_idx << " to: " << end_idx << endl;
+    shortest_path(*graph, &(graph->vertexes[start_idx]), &(graph->vertexes[end_idx]));
+    cout << endl;
+    */
+
+    depth_first_search(*graph);
+
+    cout << endl << "depth first search end!" << endl;
+    cin >> start_idx >> end_idx;
+    cout << "Depth search from: " << start_idx << " to: " << end_idx << endl;
+    depth_path(*graph, &(graph->vertexes[start_idx]), &(graph->vertexes[end_idx]));
 }
 
