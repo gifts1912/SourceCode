@@ -13,7 +13,7 @@
 #include <set>
 #include <string>
 #include <cstdlib>
-#include  "/usr/include/boost/algorithm/string.hpp"
+#include "/usr/local/Cellar/boost/1.64.0_1/include/boost/algorithm/string.hpp"
 
 using namespace std;
 
@@ -205,6 +205,68 @@ void depth_path(Graph &graph, Vertex *begin, Vertex *end){
 
 }
 
+void DFS_Logic(Graph *graph, Vertex &vt, list<Vertex *> &log_sort){
+	vt.color = Grey;
+	graph -> time ++;
+	vt.d = graph -> time;
+	for(Vertex * vt_p: graph->edges[vt.key]){
+		if(vt_p -> color == White){
+			vt_p ->parent = &vt;
+			DFS_Logic(graph, *vt_p, log_sort);
+		}
+	}
+	vt.color = Black;
+	(graph -> time) ++;
+	vt.f = graph->time;
+	log_sort.push_front(&vt);
+}
+
+void toplogic_sort(Graph *graph){
+    list<Vertex *> log_sort;
+    for(Vertex & vt : graph->vertexes){
+        vt.color = White;
+		vt.parent = NULL;
+    }
+	graph -> time = 0;
+	for(Vertex &vt : graph->vertexes)
+	{
+		if (vt.color == White){
+			DFS_Logic(graph, vt, log_sort);
+		}
+	}
+	cout <<"Logic sort: " ;
+	for(Vertex *vp: log_sort){
+		cout << vp ->key << '\t';
+	}
+	cout <<endl;
+}
+
+
+void strong_connect_component(Graph *graph) {
+    // key is also the same with index in graph->vertexes and graph->edges
+    Graph * g_t = new Graph();
+    g_t -> vertexes = graph -> vertexes;
+    for(int i = 0; i < (g_t-> vertexes).size(); i++){
+        vector<Vertex *> vt_vec;
+        Vertex *vt_b_p = &(g_t->vertexes[i]);
+        for(Vertex *vt_p : graph->edges[i]){
+            g_t->edges[vt_p->key].push_back(vt_b_p);
+        }
+    }
+    
+    cout << "Graph transpose structure begin" << endl;
+    for(const Vertex &vt : g_t -> vertexes){
+        int idx = vt.key;
+        cout << idx << '\t';
+        for(Vertex *vt_p : g_t->edges[idx]){
+            cout << vt_p -> key << ',';
+        }
+        cout << endl;
+    }
+    cout << "Graph transpose structure end" << endl;
+}
+
+
 int main(){
 	Graph *graph = new Graph();
 	string fn = "./edges_pairs.tsv";
@@ -223,11 +285,19 @@ int main(){
     cout << endl;
     */
 
+	/*
     depth_first_search(*graph);
-
-    cout << endl << "depth first search end!" << endl;
+	cout << endl << "depth first search end!" << endl;
     cin >> start_idx >> end_idx;
     cout << "Depth search from: " << start_idx << " to: " << end_idx << endl;
     depth_path(*graph, &(graph->vertexes[start_idx]), &(graph->vertexes[end_idx]));
+    */
+
+    /*
+	toplogic_sort(graph);
+    */
+
+    strong_connect_component(graph);
+
 }
 
