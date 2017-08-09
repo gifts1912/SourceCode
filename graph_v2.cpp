@@ -13,7 +13,7 @@
 #include <set>
 #include <string>
 #include <cstdlib>
-#include "/usr/local/Cellar/boost/1.64.0_1/include/boost/algorithm/string.hpp"
+#include "/usr/include/boost/algorithm/string.hpp"
 
 using namespace std;
 
@@ -241,11 +241,53 @@ void toplogic_sort(Graph *graph){
 	cout <<endl;
 }
 
+void DFS_SCC(Graph *g, Vertex &vt, list<Vertex *> & tl){
+    vt.color = Grey;
+    g -> time ++;
+    vt.d = g -> time;
+    for(Vertex *v: g->edges[vt.key]){
+        if (v -> color == White){
+            v -> parent = &vt;
+            DFS_SCC(g, *v, tl);
+        }
+    }
+    vt.color = Black;
+    g -> time ++;
+    vt.f = g -> time;
+    tl.push_front(&vt);
+}
+
+void DFS_Strong_Connect_Component(Graph *g_t, list<Vertex *> &toplogistic_sort) {
+    for(Vertex &vt:g_t->vertexes) {
+        vt.color = White;
+        vt.parent = NULL;
+    }
+    g_t -> time = 0;
+    for(Vertex &vt : g_t->vertexes) {
+        if(vt.color == White){
+            DFS_SCC(g_t, vt, toplogistic_sort);
+        }
+    }
+}
+
+void DFS_CSS_Out(Graph *g, Vertex & v, list<Vertex *> &css) {
+    v.color = Grey;
+    for(Vertex *v_iter: g->edges[v.key]){
+        if(v_iter -> color == White) {
+            DFS_CSS_Out(g, *v_iter, css);
+        }
+    }
+    v.color = Black;
+    css.push_front(&v);
+}
 
 void strong_connect_component(Graph *graph) {
     // key is also the same with index in graph->vertexes and graph->edges
     Graph * g_t = new Graph();
     g_t -> vertexes = graph -> vertexes;
+    for(int i = 0; i < graph->edges.size(); i++){
+        g_t->edges.push_back(vector<Vertex *>());
+    }
     for(int i = 0; i < (g_t-> vertexes).size(); i++){
         vector<Vertex *> vt_vec;
         Vertex *vt_b_p = &(g_t->vertexes[i]);
@@ -264,6 +306,33 @@ void strong_connect_component(Graph *graph) {
         cout << endl;
     }
     cout << "Graph transpose structure end" << endl;
+    list<Vertex *> toplogistic_sort;
+    DFS_Strong_Connect_Component(graph, toplogistic_sort);
+
+    cout << "toplogistic sort result: " << endl;
+    for(Vertex *vt : toplogistic_sort){
+        cout << vt->key << '\t';
+    }
+    cout << endl;
+    cout << "toplogistic sort result end! " << endl;
+
+
+    //strong components extracted!
+    cout << "Strong conponent output !" << endl;
+    for(Vertex &vt: g_t->vertexes){
+        vt.color = White;
+    }
+    for(Vertex &vt: g_t->vertexes) {
+        if (vt.color == White) {
+            list<Vertex *> css;
+            DFS_CSS_Out(g_t, vt, css);
+            for(Vertex * vt_iter : css) {
+                cout << vt_iter -> key << '\t';
+            }
+            cout << endl;
+        }
+    }
+    cout << "Strong conponent output end!" << endl;
 }
 
 
