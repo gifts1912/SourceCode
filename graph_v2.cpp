@@ -13,7 +13,10 @@
 #include <set>
 #include <string>
 #include <cstdlib>
+#include <regex>
+#include <iterator>
 #include "/usr/include/boost/algorithm/string.hpp"
+#include "/usr/include/boost/algorithm/string/trim.hpp"
 
 using namespace std;
 
@@ -84,9 +87,19 @@ vector<string> split(const string &text, char sep){
 void graph_add_edges(Graph *graph, vector<string>& edges){
 	int max_idx = -1;
 	vector< pair<int, int> > edge_points;
+    regex re("\\s+");
 	for (string edge: edges){
 		vector<string> tokens;
-		boost::split(tokens, edge, boost::is_any_of("\t"));
+        regex_token_iterator<string::iterator> end;
+        regex_token_iterator<string::iterator> begin(edge.begin(), edge.end(), re, -1);
+        while(begin != end) {
+            tokens.push_back(*begin++);
+        }
+		//boost::split(tokens, edge, boost::is_any_of("\t"));
+        if(tokens.size() != 2){
+            cout << edge << "\tparse edge error!" << endl;
+            return;
+        }
 		int begin_vertex_idx = atoi(tokens[0].c_str());
 		if(max_idx < begin_vertex_idx){
 			max_idx = begin_vertex_idx;
@@ -98,7 +111,7 @@ void graph_add_edges(Graph *graph, vector<string>& edges){
 		edge_points.push_back(make_pair(begin_vertex_idx, end_vertex_idx));
 	}
 	set<int> created_id;
-    for (int i = 0; i < max_idx + 2; i++){
+    for (int i = 0; i < max_idx + 1; i++){
         Vertex vt_cur(-1);
         vector<Vertex*> vec;
         (graph -> vertexes).push_back(vt_cur);
@@ -134,7 +147,10 @@ void init_graph(Graph *graph, string fn){
 	while(!fr.eof()){
 		getline(fr, line);
 		line.erase(line.find_last_not_of(" \n\r\t") + 1);
-		edges.push_back(line);
+        boost::algorithm::trim(line);
+        if (line != ""){
+            edges.push_back(line);
+        }
 	}
 	fr.close();
 
@@ -272,6 +288,10 @@ void DFS_Strong_Connect_Component(Graph *g_t, list<Vertex *> &toplogistic_sort) 
 
 void DFS_CSS_Out(Graph *g, Vertex & v, list<Vertex *> &css) {
     v.color = Grey;
+    if(v.key == -1){
+        v.color = Black;
+        return;
+    }
     for(Vertex *v_iter: g->edges[v.key]){
         if(v_iter -> color == White) {
             DFS_CSS_Out(g, *v_iter, css);
@@ -299,6 +319,9 @@ void strong_connect_component(Graph *graph) {
     cout << "Graph transpose structure begin" << endl;
     for(const Vertex &vt : g_t -> vertexes){
         int idx = vt.key;
+        if(idx == -1){
+            continue;
+        }
         cout << idx << '\t';
         for(Vertex *vt_p : g_t->edges[idx]){
             cout << vt_p -> key << ',';
