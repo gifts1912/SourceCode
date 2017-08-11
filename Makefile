@@ -10,5 +10,5 @@ OBJ = hellomake.o hellofunc.o
 #	$(CC) -o $@ $^ $(CFLAGS)
 #
 
-test: graph_v2.cpp
+test: mst.cpp
 	$(CC) -o $@ $< -lboost_system -g -std=c++11
