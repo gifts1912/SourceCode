@@ -96,6 +96,41 @@ bool isCyclic(Graph *graph) {
 bool weightAscending(const struct Edge &e1, const struct Edge &e2) {
     return e1.weight <= e2.weight;
 }
+void CruscalMST_V2(Graph * graph) {
+    struct Edge *result = (struct Edge*)malloc((graph -> V - 1) * sizeof(struct Edge));
+
+    sort(graph -> edge, graph->edge + graph->E, weightAscending);
+
+
+    struct Subset * parents = (struct Subset *) malloc (graph -> V * sizeof(struct Subset));
+    for(int i = 0; i < graph -> V; i++) {
+        parents[i].parent = i;
+        parents[i].rank = 0;
+    }
+    int e= 0, i = 0;
+    while(e <= graph -> V - 1) {
+        if(i == graph -> E ) {
+            break;
+        }
+        struct Edge &edge = graph->edge[i++];
+        int x = find(parents, edge.src);
+        int y = find(parents, edge.dest);
+        if(x != y) {
+            unio(parents, x, y);
+            result[e++] = edge; 
+        }
+    }
+
+    if(e == graph->V - 1) {
+        cout << "MST find successfully!" << endl;
+    }
+    else
+        cout << "MST not found!" <<endl;
+    for(int i = 0;i < e; i++) {
+        cout << result[i].src << ":" << result[i].dest << ":" << result[i].weight << '\t';
+    }
+    cout << endl;
+}
 void CruscalMST(Graph * graph) {
 
     Graph *mst = (Graph *) malloc (sizeof(struct Graph) * graph -> V);
@@ -160,6 +195,7 @@ int main(){
 
        cout << endl;
        */
-    CruscalMST(graph);
+    //CruscalMST(graph);
+    CruscalMST_V2(graph);
     return 0;
 }
