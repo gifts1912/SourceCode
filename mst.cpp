@@ -36,6 +36,8 @@ struct Vertex{
     string key;
     int idx;
     Vertex *parent;
+    int d;
+    int f;
     list<Edge> edges;
 };
 
@@ -43,6 +45,7 @@ struct Vertex{
 struct Graph{
     vector<Vertex> vertices;
     map<string, int> key_idx;
+    int time;
 };
 
 void graph_output(Graph *graph){
@@ -72,21 +75,21 @@ int graph_construct(Graph *graph, string fn){
         if(line == ""){
             continue;
         }
-        
+
         /*
-        vector<string> tokens;
-        boost::split(tokens, line, boost::is_any_of("\t"));
-        if(tokens.size() != 3){
-            cout <<  "file content not legal: " << line << endl;
-            return -1;
-        }
-        string key_b = tokens[0];
-        string key_e = tokens[1];
-        float weight = stof(tokens[2]);
-        */
+           vector<string> tokens;
+           boost::split(tokens, line, boost::is_any_of("\t"));
+           if(tokens.size() != 3){
+           cout <<  "file content not legal: " << line << endl;
+           return -1;
+           }
+           string key_b = tokens[0];
+           string key_e = tokens[1];
+           float weight = stof(tokens[2]);
+           */
         string key_b, key_e;
         float weight;
-        
+
         ss.str(line);
         ss >> key_b >> key_e >> weight;
         ss.str("");
@@ -123,7 +126,7 @@ int graph_construct(Graph *graph, string fn){
 
 }
 
-int Prim(Graph *graph) {
+Graph * Prim(Graph *graph) {
     //remove parallel and loops edges.
     for(Vertex &vt: graph->vertices) {
         map<string, pair<float, list<Edge>::iterator> > key_min_weight;
@@ -167,7 +170,7 @@ int Prim(Graph *graph) {
     set<string> keys;
     keys.insert(v.key);
     mst -> key_idx.clear();
-    
+
     int cur_idx = 0;
     mst -> key_idx[v.key] = cur_idx++;
 
@@ -198,11 +201,61 @@ int Prim(Graph *graph) {
         mst -> key_idx[new_key] = cur_idx++;
         keys.insert(new_key);
     }
-    
+
     cout << "Mininmus spanning tree" << endl;
     graph_output(mst);
+    return mst;
+}
 
-    return 0;
+void DFS(Vertex &v, Graph *graph, bool &cycle_flag) {
+    if(cycle_flag) {
+        return;
+    }
+    v.color = Gray; 
+    graph->time ++;
+    v.d = graph->time;
+    for(Edge e: graph -> vertices[graph->key_idx[v.key]].edges) {
+        string key = e.key_e;
+        int idx = graph -> key_idx[key];
+        if(graph->vertices[idx].color == White) {
+            DFS(graph -> vertices[idx], graph, cycle_flag);
+        }
+        else {
+            cycle_flag = true;
+            return;
+        }
+    }
+    graph -> time ++;
+    v.f = graph -> time;
+}
+
+bool cycle_detect(Graph * graph) {
+    graph -> time = 0;
+    for(Vertex &v : graph -> vertices) {
+        v.color = White;
+    }
+
+    for(Vertex &v : graph -> vertices) {
+        while(v.color == White) {
+            bool cycle = false;
+            DFS(v, graph, cycle);
+            if(cycle) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+void Kruscal(Graph *graph) {
+    bool cycle = cycle_detect(graph);
+    if(cycle) {
+        cout << "Cycle detected!" << endl;
+    }
+    else {
+        cout << "No cycyle!" << endl;
+    }
+
 }
 
 int main(){
@@ -214,8 +267,11 @@ int main(){
         return -1;
     }
 
-    Prim(graph);
+    Graph *mst = Prim(graph);
+    Kruscal(graph);
+    Kruscal(mst);
 
     free(graph);
+    free(mst);
 
 }
