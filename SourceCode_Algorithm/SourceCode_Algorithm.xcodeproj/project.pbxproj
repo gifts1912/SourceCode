@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		B5200B131F401D7A00B876F2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B5200B121F401D7A00B876F2 /* main.cpp */; };
+		B5FAE9E31F427E1D00545114 /* dijstra_algorithm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B5FAE9E11F427E1D00545114 /* dijstra_algorithm.cpp */; };
+		B5FAE9E51F4282C300545114 /* BellmanDell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B5FAE9E41F4282C300545114 /* BellmanDell.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +28,9 @@
 		B5200B0F1F401D7A00B876F2 /* SourceCode_Algorithm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SourceCode_Algorithm; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5200B121F401D7A00B876F2 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B59105A01F40267900DCB0B9 /* BellmanDell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BellmanDell.h; sourceTree = "<group>"; };
+		B5FAE9E11F427E1D00545114 /* dijstra_algorithm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dijstra_algorithm.cpp; sourceTree = "<group>"; };
+		B5FAE9E21F427E1D00545114 /* dijstra_algorithm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = dijstra_algorithm.hpp; sourceTree = "<group>"; };
+		B5FAE9E41F4282C300545114 /* BellmanDell.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BellmanDell.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,7 +64,10 @@
 			isa = PBXGroup;
 			children = (
 				B5200B121F401D7A00B876F2 /* main.cpp */,
+				B5FAE9E11F427E1D00545114 /* dijstra_algorithm.cpp */,
+				B5FAE9E21F427E1D00545114 /* dijstra_algorithm.hpp */,
 				B59105A01F40267900DCB0B9 /* BellmanDell.h */,
+				B5FAE9E41F4282C300545114 /* BellmanDell.cpp */,
 			);
 			path = SourceCode_Algorithm;
 			sourceTree = "<group>";
@@ -122,6 +130,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5200B131F401D7A00B876F2 /* main.cpp in Sources */,
+				B5FAE9E31F427E1D00545114 /* dijstra_algorithm.cpp in Sources */,
+				B5FAE9E51F4282C300545114 /* BellmanDell.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
