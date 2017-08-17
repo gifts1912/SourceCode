@@ -173,6 +173,65 @@ bool detectCycle(Graph *graph){
     }
     return false;
 }
+void topologicalSortUtil(Graph *graph, int i , bool *visited, stack<int> &res){
+    visited[i] = true;
+    struct AdjListNode *n_p = graph->array[i].head;
+    while(n_p){
+        if(!visited[i]){
+            topologicalSortUtil(graph, n_p.dest, visited, res);
+        }
+        n_p = n_p -> next;
+    }
+    res.push(i);
+}
+void topologicalSort(Graph *graph, static<int> &topo_res){
+    bool *visisted = new bool[graph -> V];
+    for(int i = 0; i < graph->V; i++){
+        visited[i] = false;
+    }
+    for(int i = 0;i < graph->V; i++){
+        if(!visited[i]){
+            topologicalSortUtil(graph, i, visited, topo_res);
+        }
+    }
+}
+void longestPath(Graph *graph, int s){
+    stack<int> topo_sort;
+    bool *visited = new bool[graph -> V];
+    for(int i = 0;i < graph -> V; i++){
+        visited[i] = false;
+    }
+    topologicalSort(graph, topo_sort);
+    int NINFINIT = numeric_limits<int>::min();
+    int *dis = new int[graph->V];
+    int *parents = new int[graph->V];
+    for(int i = 0; i < graph->V; i++){
+        dis[i] = NINFINIT;
+        parents[i] = NULL;
+    }
+    dis[s] = 0;
+    while(!topo_sort.empty())
+    {
+        int src = topo_sort.top();
+        topo_sort.pop();
+        struct AdjLinkNode *aln = graph->array[src].head;
+        while(aln){
+            int dest = aln->dest;
+            int weight = aln -> weight;
+            if(dis[src] != NINFINIT && dis[dest] < dis[src] + weight){
+                dis[dest] = dis[src] + weight;
+                parents[dest] = src;
+            }
+            aln = aln->next;
+        }
+    }
+    
+    for(int i = 0; i < graph->V; i++){
+        cout << i << " : " << dis[i] << '\t';
+    }
+    cout << endl;
+}
+
 int main(){
     Graph *g = initGraph(6);
     addEdge(g, 5, 2, 1);
