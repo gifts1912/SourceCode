@@ -25,6 +25,9 @@ struct Graph *initGraph(int V){
     Graph *graph = (struct Graph *) malloc (sizeof(struct Graph));
     graph -> V = V;
     graph -> array = (struct AdjList *) malloc (sizeof(struct AdjList) * V);
+    for(int i = 0; i < V; i++){
+        graph -> array[i].head = NULL;
+    }
     return graph;
 };
 
@@ -248,10 +251,11 @@ void DFS_SCC(Graph *g, int i, Color * color){
 }
 void strongConnectComponents(Graph *graph){
     // lostic sort
-    stack<int> logistic_sort = logisticSort(graph);
+    stack<int> logistic_sort;
+    topologicalSort(graph, logistic_sort);
     
     // reverse arcs of graph generate.
-    Graph *rg = createGraph(graph -> V);
+    Graph *rg = initGraph(graph -> V);
     for(int i = 0; i < graph -> V; i++){
         struct AdjListNode *n_p = graph->array[i].head;
         while(n_p) {
@@ -262,7 +266,7 @@ void strongConnectComponents(Graph *graph){
     }
 
     outGraph(rg);
-    
+
     Color *colors = new Color[graph -> V];
     for(int i = 0; i < graph -> V; i++){
         colors[i] = WHITE;
@@ -273,7 +277,7 @@ void strongConnectComponents(Graph *graph){
         logistic_sort.pop();
         for(int i = 0; i < graph -> V; i++){
             if(colors[i] == WHITE){
-                DSF_SCC(rg, i, colors);
+                DFS_SCC(rg, i, colors);
                 cout << endl;
             }
         }
@@ -281,6 +285,13 @@ void strongConnectComponents(Graph *graph){
     
 }
 int main(){
+    Graph *g = initGraph(5);
+    addEdge(g, 1, 0, 1);
+    addEdge(g, 0, 2, 1);
+    addEdge(g, 2, 1, 1);
+    addEdge(g, 0, 3, 1);
+    addEdge(g, 3, 4, 1);
+    /*
     Graph *g = initGraph(6);
     addEdge(g, 5, 2, 1);
     addEdge(g, 5, 0, 1);
@@ -288,6 +299,7 @@ int main(){
     addEdge(g, 4, 1, 1);
     addEdge(g, 2, 3, 1);
     addEdge(g, 3, 1, 1);
+    */
 
     /*
     Graph *g = initGraph(4);
@@ -311,6 +323,7 @@ int main(){
     cout << "Have cycle: " << cycleFlag << endl;
     */
 
-    longestPath(g, 2);
+//    longestPath(g, 2);   
+    strongConnectComponents(g);
     return 0;
 }
