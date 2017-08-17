@@ -141,7 +141,38 @@ void logisticSort(Graph *graph){
     }
     cout << endl;
 }
+bool detectCycleUtil(Color *colors, int i, Graph *graph) {
+    colors[i] = GRAY;
+    AdjListNode *n_p = graph -> array[i].head;
+    while(n_p){
+        int dest = n_p -> dest;
+        if(colors[dest] == GRAY){
+            return true;
+        }
+        else if(colors[dest] == WHILTE){
+            return detectCycleUtil(colors, dest, graph);
+        }
+        n_p = n_p -> next;
+    }
+    colors[i] = BLACK;
+    return false;
+}
 
+bool detectCycle(Graph *graph){
+    Color clores = new enum Color[graph -> V];
+    for(int i = 0; i < graph -> V; i++){
+        colors[i] = WHITE;
+    }
+    for(int i = 0; i < graph -> V; i++){
+        if(colors[i] == WHITE){
+            bool flag == detectCycleUtil(colors, i, graph);
+            if (flag){
+                return true;
+            }
+        }
+    }
+    return false;
+}
 int main(){
     Graph *g = initGraph(6);
     addEdge(g, 5, 2, 1);
