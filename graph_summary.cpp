@@ -149,7 +149,7 @@ bool detectCycleUtil(Color *colors, int i, Graph *graph) {
         if(colors[dest] == GRAY){
             return true;
         }
-        else if(colors[dest] == WHILTE){
+        else if(colors[dest] == WHITE){
             return detectCycleUtil(colors, dest, graph);
         }
         n_p = n_p -> next;
@@ -159,13 +159,13 @@ bool detectCycleUtil(Color *colors, int i, Graph *graph) {
 }
 
 bool detectCycle(Graph *graph){
-    Color clores = new enum Color[graph -> V];
+    Color *colors = new enum Color[graph -> V];
     for(int i = 0; i < graph -> V; i++){
         colors[i] = WHITE;
     }
     for(int i = 0; i < graph -> V; i++){
         if(colors[i] == WHITE){
-            bool flag == detectCycleUtil(colors, i, graph);
+            bool flag = detectCycleUtil(colors, i, graph);
             if (flag){
                 return true;
             }
@@ -181,10 +181,26 @@ int main(){
     addEdge(g, 4, 1, 1);
     addEdge(g, 2, 3, 1);
     addEdge(g, 3, 1, 1);
-    outGraph(g);
-    graphBFS(g);
-    graphDFS(g);
-    logisticSort(g);
 
+    /*
+    Graph *g = initGraph(4);
+    addEdge(g, 0, 1, 1);
+    addEdge(g, 0, 2, 1);
+    addEdge(g, 1, 2, 1);
+    addEdge(g, 2, 0, 1);
+    addEdge(g, 2, 3, 1);
+    addEdge(g, 3, 3, 1);
+    */
+
+    outGraph(g);
+
+    /*
+       graphBFS(g);
+       graphDFS(g);
+       logisticSort(g);
+       */
+
+    bool cycleFlag = detectCycle(g);
+    cout << "Have cycle: " << cycleFlag << endl;
     return 0;
 }
