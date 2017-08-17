@@ -1,6 +1,7 @@
 #include <iostream>
 #include <queue>
 #include <stack>
+#include <limits>
 
 
 using namespace std;
@@ -178,14 +179,14 @@ void topologicalSortUtil(Graph *graph, int i , bool *visited, stack<int> &res){
     struct AdjListNode *n_p = graph->array[i].head;
     while(n_p){
         if(!visited[i]){
-            topologicalSortUtil(graph, n_p.dest, visited, res);
+            topologicalSortUtil(graph, n_p -> dest, visited, res);
         }
         n_p = n_p -> next;
     }
     res.push(i);
 }
-void topologicalSort(Graph *graph, static<int> &topo_res){
-    bool *visisted = new bool[graph -> V];
+void topologicalSort(Graph *graph, stack<int> &topo_res){
+    bool *visited = new bool[graph -> V];
     for(int i = 0; i < graph->V; i++){
         visited[i] = false;
     }
@@ -207,14 +208,14 @@ void longestPath(Graph *graph, int s){
     int *parents = new int[graph->V];
     for(int i = 0; i < graph->V; i++){
         dis[i] = NINFINIT;
-        parents[i] = NULL;
+        parents[i] = -1;
     }
     dis[s] = 0;
     while(!topo_sort.empty())
     {
         int src = topo_sort.top();
         topo_sort.pop();
-        struct AdjLinkNode *aln = graph->array[src].head;
+        struct AdjListNode *aln = graph->array[src].head;
         while(aln){
             int dest = aln->dest;
             int weight = aln -> weight;
@@ -258,8 +259,11 @@ int main(){
        graphDFS(g);
        logisticSort(g);
        */
-
+    /*
     bool cycleFlag = detectCycle(g);
     cout << "Have cycle: " << cycleFlag << endl;
+    */
+
+    longestPath(g, 2);
     return 0;
 }
