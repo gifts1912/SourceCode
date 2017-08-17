@@ -233,6 +233,53 @@ void longestPath(Graph *graph, int s){
     cout << endl;
 }
 
+void DFS_SCC(Graph *g, int i, Color * color){
+    color[i] = GRAY;
+    AdjListNode * np = g -> array[i].head;
+    while(np){
+        int dest = np-> dest;
+        if(color[dest] == WHITE){
+            DFS_SCC(g, dest, color);
+        }
+        np = np -> next;
+    }
+    color[i] = BLACK;
+    cout << i << '\t';
+}
+void strongConnectComponents(Graph *graph){
+    // lostic sort
+    stack<int> logistic_sort = logisticSort(graph);
+    
+    // reverse arcs of graph generate.
+    Graph *rg = createGraph(graph -> V);
+    for(int i = 0; i < graph -> V; i++){
+        struct AdjListNode *n_p = graph->array[i].head;
+        while(n_p) {
+            int src = n_p -> dest;
+            addEdge(rg, src, i, n_p->weight);
+            n_p = n_p -> next;
+        }
+    }
+
+    outGraph(rg);
+    
+    Color *colors = new Color[graph -> V];
+    for(int i = 0; i < graph -> V; i++){
+        colors[i] = WHITE;
+    }
+    cout << "strong connect components" << endl;
+    while(!logistic_sort.empty()){
+        int dest = logistic_sort.top();
+        logistic_sort.pop();
+        for(int i = 0; i < graph -> V; i++){
+            if(colors[i] == WHITE){
+                DSF_SCC(rg, i, colors);
+                cout << endl;
+            }
+        }
+    }
+    
+}
 int main(){
     Graph *g = initGraph(6);
     addEdge(g, 5, 2, 1);
