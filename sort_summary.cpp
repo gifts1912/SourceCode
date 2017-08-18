@@ -28,6 +28,18 @@ void head_sort(int *arr, int n){
     cout << endl;
 }
 
+void heap_sort(int *arr, int n){
+    for(int i = 0; i < n; i++){
+        int v = arr[n-1-i];
+        arr[n-1-i] = arr[0];
+        arr[0] = arr[n-1-i];
+        head_adjust(arr, n-1);
+    }
+    for(int i = 0; i < n; i++){
+        cout << arr[i] << '\t';
+    }
+    cout << endl;
+}
 int main(){
     int arr[] = {2, 1, 5, 3, 4};
     head_sort(arr, sizeof(arr)/sizeof(arr[0]));
