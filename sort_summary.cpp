@@ -44,8 +44,64 @@ void heap_sort(int *arr, int n){
     cout << endl;
 }
 
+
+#define V 5
+
+using namespace std;
+
+const int INIFINITE = numeric_limits<int>::max();
+
+void allPairsShotestPathMatrixMul(int matrix[][V]){
+    int L[V][V];
+    for(int i = 0; i < V; i++){
+        for(int j = 0; j < V; j++){
+            L[i][j] = matrix[i][j];
+        }
+    }
+    
+    for(int iter = 2; iter < V; iter ++){
+        for(int i = 0; i < V; i++){
+            for(int j = 0; j < V; j++){
+                for(int k = 0; k < V; k++){
+                    if(L[i][k] != INIFINITE && matrix[k][j] != INIFINITE && L[i][j] > L[i][k] + matrix[k][j])
+                        L[i][j] = L[i][k] + matrix[k][j];
+                }
+            }
+        }
+    }
+    
+    cout << "After n path the shorted path distance is :" << endl;
+    for(int i = 0; i < V; i++){
+        for(int j = 0; j < V; j++){
+            if (L[i][j] == INIFINITE) {
+                cout << "INT" << '\t';
+            }
+            else
+                cout << L[i][j] << '\t';
+        }
+        cout << endl;
+    }
+    
+}
+
+int main(){
+    int matrix[V][V] = {
+        {0, 3, 8, INIFINITE, -4},
+        {INIFINITE, 0, INIFINITE, 1, 7},
+        {INIFINITE, 4, 0, INIFINITE, INIFINITE},
+        {2, INIFINITE, -5, 0, INIFINITE},
+        {INIFINITE, INIFINITE, INIFINITE, 6, 0}
+    };
+    
+    allPairsShotestPathMatrixMul(matrix);
+    
+    return 0;
+}
+
+/*
 int main(){
     int arr[] = {2, 1, 5, 3, 4};
     heap_sort(arr, sizeof(arr)/sizeof(arr[0]));
     return 0;
 }
+*/
