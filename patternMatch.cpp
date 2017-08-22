@@ -4,42 +4,52 @@
 
 
 using namespace std;
+#define d 256
 
 
-const int d = 256;
 
-void RabinKarp(char * txt, char *pat, int p){
-    int n = strlen(txt);
-    int m = strlen(pat);
-    int p_hash = pat[0];
-    int t_hash = txt[0];
-    for(int i = 1; i < m; i++){
-        p_hash = d * (p_hash + pat[i]) % p;
-        t_hash  = d * (t_hash + txt[i]) % p;
-    }
-    int m_h = pow(d, m - 1);
-    for(int i = 0; i < n-m; i++){
-        if(p_hash == t_hash){
-            for(int j = 0; j < m; j++){
-                if(txt[i*m + j] != pat[j]){
-                    break;
-                }
-            }
-            cout << "Match at position: " << i << endl;
-        }
-        t_hash = (d * (t_hash - m_h * txt[i*m]) + txt[i * m + m])%p;
-	if(t_hash < 0){
-		t_hash += p;
+void searchv2(char *pat, char *txt, int q) {
+	int n = strlen(txt);
+	int m = strlen(pat);
+	int p = 0, t = 0;
+	for (int i = 0; i < m; i++) {
+		p = (d * p + pat[i]) % q;
+		t = (d * t + txt[i]) % q;
 	}
-    }
-    cout << endl;
+	int h = 1;
+	for (int i = 0; i < m - 1; i++)
+		h = (h*d) % q;
+
+	//int h = (int)pow(d, m - 1) % q;
+
+	for (int i = 0; i <= n - m; i++) {
+		if (p == t) {
+			int j;
+			for (j = 0; j < m; j++) {
+				if (txt[i + j] != pat[j]) {
+					break;
+				}
+			}
+			if (j == m) {
+				cout << "Match at " << i << endl;
+			}
+		}
+		if (i < n - m) {
+			t = (d * (t - txt[i] * h) + txt[i + m]) % q;
+		}
+		if (t < 0) {
+			t += q;
+		}
+	}
+
 }
 
-int main(){
+int main()
+{
+	char txt[] = "GEEKS FOR GEEKS";
+	char pat[] = "GEEK";
+	int q = 101; // A prime number
 
-    char txt[] = "GEEKS FOR GEEKS";
-    char pat[] = "GEEK";
-    int q = 101;
-    RabinKarp(txt, pat, q);
-    return 0;
+	searchv2(pat, txt, q);
+	return 0;
 }
