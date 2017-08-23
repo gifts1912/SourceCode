@@ -1,11 +1,54 @@
 #include <iostream>
 #include <cstring>
 #include <cmath>
-
+#include <set>
 
 using namespace std;
 #define d 256
 
+struct cstrless {
+	bool operator() (const char *a, const char *b) {
+		return strcmp(a, b) < 0;
+	}
+};
+
+int * LPM(char *pat) {
+	int m = strlen(pat);
+	int *arr = new int[m];
+	arr[0] = 0;
+	arr[1] = 0;
+	for (int i = 2; i <= m; i++) {
+		char *pat_cur = new char[m];
+		strncpy(pat_cur, pat, i);
+		set<char *, cstrless> pre, pos;
+		for (int j = 1; j < i; j++) {
+			char *buf = new char[i];
+			strncpy(buf, pat_cur, j);
+			pre.insert(buf);
+
+			strncpy(buf, pat_cur + i - j, j);
+			pos.insert(buf);
+		}
+
+		int lpm = 0;
+		for (char * ele : pre) {
+			if (pos.find(ele) != pos.end()) {
+				if (lpm < strlen(ele)) {
+					lpm = strlen(ele);
+				}
+			}
+		}
+		arr[i] = lpm;
+	}
+	return arr;
+}
+
+void KMPSearch(char *pat, char *txt) {
+	int m = strlen(pat);
+	LPM(pat);
+}
+
+// Driver program to test above function
 
 
 void searchv2(char *pat, char *txt, int q) {
@@ -43,7 +86,7 @@ void searchv2(char *pat, char *txt, int q) {
 	}
 
 }
-
+/*
 int main()
 {
 	char txt[] = "GEEKS FOR GEEKS";
@@ -51,5 +94,19 @@ int main()
 	int q = 101; // A prime number
 
 	searchv2(pat, txt, q);
+	return 0;
+}
+*/
+int main()
+{
+	char *txt = "ABABDABACDABABCABAB";
+	char *pat = "AAACAAAA";
+	int * lmp = LPM(pat);
+	for (int i = 0; i < strlen(pat); i++) {
+		cout << i << ':' << lmp[i] << '\t';
+	}
+	cout << endl;
+	//PSearch(pat, txt);
+	getchar();
 	return 0;
 }
