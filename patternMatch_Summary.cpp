@@ -6,50 +6,80 @@
 using namespace std;
 #define d 256
 
-struct cstrless {
-	bool operator() (const char *a, const char *b) {
-		return strcmp(a, b) < 0;
-	}
-};
+// C++ program for implementation of KMP pattern searching
+// algorithm
+#include<iostream>
+#include <cstring>
+#include <set>
+
+using namespace std;
 
 int * LPM(char *pat) {
 	int m = strlen(pat);
 	int *arr = new int[m];
 	arr[0] = 0;
-	arr[1] = 0;
-	for (int i = 2; i <= m; i++) {
-		char *pat_cur = new char[m];
-		strncpy(pat_cur, pat, i);
-		set<char *, cstrless> pre, pos;
-		for (int j = 1; j < i; j++) {
-			char *buf = new char[i];
-			strncpy(buf, pat_cur, j);
-			pre.insert(buf);
-
-			strncpy(buf, pat_cur + i - j, j);
-			pos.insert(buf);
+	int len = 0;
+	int i = 1;
+	while (i < m) {
+		if (pat[i] == pat[len]) {
+			len++;
+			arr[i] = len;
+			i++;	
 		}
-
-		int lpm = 0;
-		for (char * ele : pre) {
-			if (pos.find(ele) != pos.end()) {
-				if (lpm < strlen(ele)) {
-					lpm = strlen(ele);
-				}
+		else {
+			if (len != 0) {
+				len = arr[len - 1];
+			}
+			else {
+				arr[i] = 0;
+				i++;
 			}
 		}
-		arr[i] = lpm;
 	}
+	for (int i = 0; i < m; i++) {
+		cout << i << ":" << arr[i] << '\t';
+	}
+	cout << endl;
 	return arr;
 }
 
-void KMPSearch(char *pat, char *txt) {
+void KMPSearchV2(char *pat, char *txt) {
+	int n = strlen(txt);
 	int m = strlen(pat);
-	LPM(pat);
+	int *lpm = new int[m];
+	lpm = LPM(pat);
+	
+	int i = 0, j = 0;
+	while (i < n) {
+		while (j < m && txt[i] == pat[j]) {
+			i++;
+			j++;
+		}
+		if (j == m) {
+			cout << "Match pos: " << i - m << endl;
+			j = 0;
+		}
+		else {
+			if (j == 0)
+				i++;
+			else
+				j = lpm[j - 1];
+		}
+	}
 }
 
-// Driver program to test above function
 
+/*
+int main()
+{
+	char *txt = "ABABDABACDABABCABAB";
+	char *pat = "ABAB";
+	//LPM(pat);
+	KMPSearchV2(pat, txt);
+	return 0;
+}
+
+*/
 
 void searchv2(char *pat, char *txt, int q) {
 	int n = strlen(txt);
