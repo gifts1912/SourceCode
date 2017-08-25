@@ -7,14 +7,22 @@ enum Color {
 	RED,
 	BLACK
 };
-
+struct Interval {
+	int low;
+	int high;
+	Interval(){}
+	Interval(int _l, int _h): low(_l), high(_h){}
+};
 struct Node {
 	int k;
 	struct Node *l, *r, *p;
 	enum Color c;
 	int size;
+	struct Interval intv;
+	int m;
 	Node(int _k, struct Node *_l, struct Node *_r) :k(_k), c(RED), l(_l), r(_r), p(NULL), size(1){}
 	Node():k(-1), c(RED), l(NULL), r(NULL), p(NULL), size(1){}
+	Node(struct Interval _int, struct Node *_l, struct Node *_r) :intv(_int), k(_int.low), m(_int.high), c(RED), l(_l), r(_r), p(NULL), size(1) {}
 };
 
 struct RBT {
@@ -27,6 +35,7 @@ struct RBT {
 		nil->r = nil;
 		nil->p = nil;
 		nil->size = 0;
+		nil->m = -1;
 		root = nil;
 	}
 };
@@ -52,6 +61,10 @@ void leftRotate(struct RBT *rbt, struct Node *n) {
 
 	y->size = n->size;
 	n->size = n->l->size + n->r->size + 1;
+
+	y->m = n->m;
+	n->m = max(n->intv.high, n->l->m);
+	n->m = max(n->m, n->r->m);
 }
 
 void rightRotate(struct RBT *rbt, struct Node *n) {
@@ -75,6 +88,10 @@ void rightRotate(struct RBT *rbt, struct Node *n) {
 	
 	y->size = n->size;
 	n->size = n->l->size + n->r->size + 1;
+
+	y->m = n->m;
+	n->m = max(n->intv.high, n->l->m);
+	n->m = max(n->m, n->r->m);
 }
 
 
@@ -213,7 +230,7 @@ void deleteFixUp(struct RBT *rbt, struct Node *n) {
 				if (s->l->c == RED) {
 					s->l->c = BLACK;
 					s->c = RED;
-					leftRotate(rbt, s);
+					rightRotate(rbt, s);
 					s = s->p;
 				}
 				s->c = n->p->c;
@@ -224,7 +241,7 @@ void deleteFixUp(struct RBT *rbt, struct Node *n) {
 			}
 		}
 		else {
-			struct Node *s = n->p->r;
+			struct Node *s = n->p->l;
 			if (s->c == RED) {
 				s->c = BLACK;
 				n->p->c = RED;
@@ -294,7 +311,11 @@ void deleteNode(struct RBT *brt, int v) {
 	while (n_u != brt->nil) {
 		n_u->size--;
 		n_u = n_u->p;
+		n_u->m = max(n_u->intv.high, n_u->l->m);
+		n_u->m = max(n_u->m, n_u->r->m);
 	}
+
+
 	if(y_c_o == BLACK)
 		deleteFixUp(brt, x);
 }
@@ -308,7 +329,7 @@ void outLayer(struct RBT *rbt) {
 	while (!nq.empty()) {
 		struct Node *c = nq.front();
 		nq.pop();
-		cout << c->k << ':' << c->c << ':' <<  c->size << '\t';
+		cout << c->k << ':' << c->c << ':' << c->size << c->intv.low << "-" << c->intv.high << ':' << c->m << '\t';
 		if (c->l != rbt->nil) {
 			nq.push(c->l);
 		}
@@ -348,7 +369,98 @@ int searchNodeSeq(struct RBT *rbt, struct Node *n) {
 	return ith;
 }
 
+bool overlap(struct Interval &u, struct Interval &v) {
+	bool flag = false;
+	if (u.high >= v.low && u.low <= v.high) {
+		flag = true;
+	}
+	return flag;
+}
+struct Node *intervalSearch(struct RBT *rbt, struct Interval &intv) {
+	struct Node *nc = rbt->root;
+	while (nc != rbt->nil & !overlap(nc->intv, intv)) {
+		if (nc->m > intv.low) {
+			nc = nc->l;
+		}
+		else {
+			nc = nc->r;
+		}
+	}
+	return nc;
+}
+
+
+void intervalInsert(struct RBT *rbt, struct Interval intv) {
+	struct Node * n_n = new struct Node(intv, rbt->nil, rbt->nil);
+	struct Node *n_c = rbt->root, *n_p = rbt->nil;
+	if (n_c == rbt->nil) {
+		rbt->root = n_n;
+		n_n->c = BLACK;
+		n_n->p = rbt->nil;
+		n_n->l = rbt->nil;
+		n_n->r = rbt->nil;
+		return;
+	}
+
+	while (n_c != rbt->nil) {
+		n_p = n_c;
+		if (n_c->k <= n_n->k) {
+			n_c = n_c->r;
+		}
+		else {
+			n_c = n_c->l;
+
+		}
+		if (n_p -> m < n_n -> m) {
+			n_p->m = n_n->m;
+		}
+	}
+	
+	if (n_p->k <= n_n->k) {
+		n_p->r = n_n;
+		n_n->p = n_p;
+	}
+	else {
+		n_p->l = n_n;
+		n_n->p = n_p;
+	}
+	if (n_p->c == RED) {
+		fixUp(rbt, n_n);
+	}
+}
+
+
+
+
 int main() {
+	// main function that used for interval tree;
+	struct RBT *rbt = new struct RBT();
+	Interval ints[] = { { 15, 20 },{ 10, 30 },{ 17, 19 },
+	{ 5, 20 },{ 12, 15 },{ 30, 40 } };
+	
+	for (int i = 0; i < sizeof(ints) / sizeof(ints[0]); i++) {
+		intervalInsert(rbt, ints[i]);
+	}
+	
+	outLayer(rbt);
+	struct Interval intv(6, 7);
+	struct Node * in = intervalSearch(rbt, intv);
+	if (in != rbt->nil) {
+		cout << "interval search " << in->intv.low << "-" << in->intv.high << endl;
+	}
+
+	int k = 15;
+	deleteNode(rbt, k);
+	outLayer(rbt);
+
+	return 0;
+}
+
+
+
+/*
+int main() {
+	// main function that used for RB tree and sequence tree;
 	struct RBT *rbt = new struct RBT();
 	//int arr[] = { 'B' , 'A', 'D', 'C', 'E' };
 	int arr[] = { 7, 3, 18, 10, 22, 8, 11, 26 };
@@ -386,3 +498,4 @@ int main() {
 
 	return 0;
 }
+*/
