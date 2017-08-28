@@ -590,3 +590,74 @@ int main(){
     return 0;
 }
 
+#include <iostream>
+#include <cstring>
+#include <algorithm>
+#include <limits>
+#include <vector>
+#include <map>
+#include <cmath>
+
+using namespace std;
+
+const int N = 20;
+int wei[N][N] = {};
+//map<pair<int, bool[]>, int> f;
+const int INIF = numeric_limits<int>::max();
+const int M = pow(2, N);
+
+
+
+//vector<bool> visited(N, false);
+
+//visited: 2^n
+
+int compress(vector<bool> & visited){
+    int r = 0;
+    for(vector<bool>::iterator iter = visited.begin(); iter != visited.end(); iter++){
+        r = (2 * r + *iter);
+    }
+    return r;
+}
+int travel(int idx, vector<bool> &visited, int **f){
+    if(count(visited.begin(), visited.end(), true) == N){
+        return 0;
+    }
+    
+    int v = compress(visited);
+    if(f[idx][v] != INIF){
+        return f[idx][v];
+    }
+    
+    int d = numeric_limits<int>::max();
+    for(int i = 0; i < N; i++){
+        if(!visited[i]){
+            visited[i] = true;
+            d = min(d, travel(i, visited, f) + wei[idx][i]);
+            visited[i] = false;
+        }
+    }
+    return d;
+    
+}
+
+int main(){
+    int f[N][M];
+    
+    for(int i = 0; i< N; i++){
+        for(int j = 0; j < M; j++){
+            f[i][j] = INIF;
+        }
+    }
+    int d = numeric_limits<int>::max();
+    vector<bool> visited(N, false);
+    
+    for(int i = 0; i < N; i++){
+        visited[i] = true;
+        d = min(d, travel(i, visited, f));
+        visited[i] = false;
+    }
+    cout << "The smallest distance is :" << d << endl;
+    
+    return 0;
+}
